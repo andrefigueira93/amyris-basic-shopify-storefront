@@ -1,6 +1,8 @@
 # Getting Started with Shopify Headless CMS
 
-This project was built for a www.WorkingWithShopify.com course. 
+Client Side App
 
-A demo of the final project can be found here: https://shopify-headless.netlify.app
-
+React: create-react-app
+Chakra UI
+Typescript
+Shopify CMS
