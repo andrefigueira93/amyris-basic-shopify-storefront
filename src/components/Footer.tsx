@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Box, Text, Image, VStack } from '@chakra-ui/react';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
     <Box backgroundColor="#FFA8E2">
       <Grid

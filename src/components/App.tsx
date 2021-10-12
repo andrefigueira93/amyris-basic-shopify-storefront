@@ -8,7 +8,7 @@ import Cart from '../components/Cart';
 import NavMenu from '../components/NavMenu';
 import Footer from './Footer';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
       <Router>

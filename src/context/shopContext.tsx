@@ -5,7 +5,7 @@ interface ProductWithHandle extends Product {
   handle?: string;
 }
 
-interface ShopifyContextData {
+interface SCData {
   product: ProductWithHandle | undefined;
   products: ProductWithHandle[] | undefined;
   checkout: Cart | undefined;
@@ -23,9 +23,7 @@ interface ShopifyContextData {
   openMenu(): void;
 }
 
-const ShopContext = React.createContext<ShopifyContextData>(
-  {} as ShopifyContextData
-);
+const ShopContext = React.createContext<SCData>({} as SCData);
 
 const client = Client.buildClient({
   storefrontAccessToken: process.env.REACT_APP_SHOPIFY_TOKEN!,

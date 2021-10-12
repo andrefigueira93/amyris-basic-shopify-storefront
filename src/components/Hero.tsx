@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Text, Image, Center } from '@chakra-ui/react';
 
-const Hero = () => {
+const Hero: React.FC = () => {
   return (
     <Box backgroundColor="#FFA8E2" w="100%" position="relative" h="70vh">
       <Image

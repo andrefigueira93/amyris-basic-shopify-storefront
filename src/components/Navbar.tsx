@@ -5,7 +5,7 @@ import { ShopContext } from '../context/shopContext';
 import { Badge, Box, Icon, Image } from '@chakra-ui/react';
 import { MdShoppingBasket, MdDehaze } from 'react-icons/md';
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const { openCart, openMenu, checkout } = useContext(ShopContext);
 
   return (

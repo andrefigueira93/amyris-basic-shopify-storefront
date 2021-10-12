@@ -15,7 +15,7 @@ import {
 import { ShopContext } from '../context/shopContext';
 import { Link } from 'react-router-dom';
 
-const NavMenu = () => {
+const NavMenu: React.FC = () => {
   const { isMenuOpen, closeMenu } = useContext(ShopContext);
 
   return (

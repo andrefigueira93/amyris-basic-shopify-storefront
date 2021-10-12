@@ -6,7 +6,7 @@ import Hero from '../components/Hero';
 import RichText from '../components/RichText';
 import ImageWithText from '../components/ImageWithText';
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
   const { fetchAllProducts, products } = useContext(ShopContext);
 
   useEffect(() => fetchAllProducts(), [fetchAllProducts]);
