@@ -1,13 +1,13 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Grid, Text, Image } from '@chakra-ui/react';
-import { ShopContext } from '../context/shopContext';
+import { useShopify } from '../context/shopContext';
 import Hero from '../components/Hero';
 import RichText from '../components/RichText';
 import ImageWithText from '../components/ImageWithText';
 
 const HomePage: React.FC = () => {
-  const { fetchAllProducts, products } = useContext(ShopContext);
+  const { fetchAllProducts, products } = useShopify();
 
   useEffect(() => fetchAllProducts(), [fetchAllProducts]);
 

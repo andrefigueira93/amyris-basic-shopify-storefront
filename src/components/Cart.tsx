@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { ShopContext } from '../context/shopContext';
+import React from 'react';
+import { useShopify } from '../context/shopContext';
 
 import {
   Drawer,
@@ -20,14 +20,13 @@ import {
 import { CloseIcon } from '@chakra-ui/icons';
 
 const Cart: React.FC = () => {
-  const { isCartOpen, closeCart, checkout, removeLineItem } =
-    useContext(ShopContext);
+  const { isCartOpen, toggleCart, checkout, removeLineItem } = useShopify();
 
   return (
     <>
       <Drawer
         isOpen={isCartOpen}
-        onClose={closeCart}
+        onClose={toggleCart}
         placement="right"
         size="sm"
       >

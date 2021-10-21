@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Box,
@@ -11,7 +11,7 @@ import {
   Center,
 } from '@chakra-ui/react';
 
-import { ShopContext } from '../context/shopContext';
+import { useShopify } from '../context/shopContext';
 import RichText from '../components/RichText';
 
 interface ProductPageHandle {
@@ -27,7 +27,7 @@ const ProductPage: React.FC = () => {
     addItemToCheckout,
     product,
     products,
-  } = useContext(ShopContext);
+  } = useShopify();
 
   useEffect(() => {
     fetchProductWithHandle(handle);

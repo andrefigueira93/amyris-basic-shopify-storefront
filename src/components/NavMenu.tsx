@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
 import {
   Drawer,
@@ -12,17 +12,17 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-import { ShopContext } from '../context/shopContext';
+import { useShopify } from '../context/shopContext';
 import { Link } from 'react-router-dom';
 
 const NavMenu: React.FC = () => {
-  const { isMenuOpen, closeMenu } = useContext(ShopContext);
+  const { isMenuOpen, toggleMenu } = useShopify();
 
   return (
     <>
       <Drawer
         isOpen={isMenuOpen}
-        onClose={closeMenu}
+        onClose={toggleMenu}
         placement="left"
         size="sm"
       >

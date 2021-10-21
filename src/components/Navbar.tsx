@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShopContext } from '../context/shopContext';
+import { useShopify } from '../context/shopContext';
 
 import { Badge, Box, Icon, Image } from '@chakra-ui/react';
 import { MdShoppingBasket, MdDehaze } from 'react-icons/md';
 
 const Navbar: React.FC = () => {
-  const { openCart, openMenu, checkout } = useContext(ShopContext);
+  const { toggleCart, toggleMenu, checkout } = useShopify();
 
   return (
     <Box
@@ -21,7 +21,7 @@ const Navbar: React.FC = () => {
       <Icon
         fill="white"
         cursor="pointer"
-        onClick={() => openMenu()}
+        onClick={() => toggleMenu()}
         as={MdDehaze}
         w={30}
         h={30}
@@ -37,7 +37,7 @@ const Navbar: React.FC = () => {
         <Icon
           fill="white"
           cursor="pointer"
-          onClick={() => openCart()}
+          onClick={() => toggleCart()}
           as={MdShoppingBasket}
           w={30}
           h={30}

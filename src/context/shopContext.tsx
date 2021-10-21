@@ -1,142 +1,165 @@
-import React, { Component } from 'react';
-import Client, { Cart, Product } from 'shopify-buy';
+import React, {
+  createContext,
+  useCallback,
+  useState,
+  useContext,
+  useEffect,
+} from 'react';
+import { Cart, Collection, Product } from 'shopify-buy';
+import Client from '../services/shopifyConnection';
 
 interface ProductWithHandle extends Product {
   handle?: string;
 }
 
 interface SCData {
-  product: ProductWithHandle | undefined;
+  product: Product | undefined;
   products: ProductWithHandle[] | undefined;
   checkout: Cart | undefined;
+  collections: Collection[] | undefined;
   isCartOpen: boolean;
   isMenuOpen: boolean;
   createCheckout(): void;
   fetchCheckout(checkoutId: string): void;
-  addItemToCheckout(variantId: any, quantity: number): void;
+  addItemToCheckout(variantId: string | number, quantity: number): void;
   removeLineItem(lineItemIdsToRemove: string | string[]): void;
   fetchAllProducts(): void;
   fetchProductWithHandle(handle: string): void;
-  closeCart(): void;
-  openCart(): void;
-  closeMenu(): void;
-  openMenu(): void;
+  fetchCollections(): void;
+  toggleCart(): void;
+  toggleMenu(): void;
 }
 
-const ShopContext = React.createContext<SCData>({} as SCData);
+const ShopifyContext = createContext<SCData | undefined>(undefined);
 
-const client = Client.buildClient({
-  storefrontAccessToken: process.env.REACT_APP_SHOPIFY_TOKEN!,
-  domain: process.env.REACT_APP_SHOPIFY_DOMAIN!,
-});
+const ShopifyProvider: React.FC = ({ children }) => {
+  const [product, setProduct] = useState<Product>();
+  const [products, setProducts] = useState<Product[]>();
+  const [collections, setCollections] = useState<Collection[]>();
+  const [checkout, setCheckout] = useState<Cart>();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-class ShopProvider extends Component {
-  state = {
-    products: [] as Product[],
-    product: undefined,
-    checkout: {} as Cart,
-    isCartOpen: false,
-    isMenuOpen: false,
-  };
+  function toggleCart() {
+    setIsCartOpen(!isCartOpen);
+  }
 
-  componentDidMount() {
-    if (localStorage.checkout_id) {
-      this.fetchCheckout(localStorage.checkout_id);
-    } else {
-      this.createCheckout();
+  function toggleMenu() {
+    setIsMenuOpen(!isMenuOpen);
+  }
+
+  async function fetchCollections() {
+    const allCollections = await Client.collection.fetchAll();
+    setCollections(allCollections);
+  }
+
+  async function fetchCheckout(checkoutId: string) {
+    await Client.checkout
+      .fetch(checkoutId)
+      .then((res) => setCheckout(res))
+      .catch((error) => console.log(error));
+  }
+
+  async function createCheckout() {
+    const newCheckout = await Client.checkout.create();
+    localStorage.setItem('checkout_id', JSON.stringify(checkout?.id));
+    setCheckout(newCheckout);
+  }
+
+  async function removeLineItem(lineItemIdsToRemove: string[]) {
+    if (checkout)
+      await Client.checkout
+        .removeLineItems(checkout.id, lineItemIdsToRemove)
+        .then((newCheckout) => setCheckout(newCheckout));
+  }
+
+  async function fetchAllProducts() {
+    const allProducts = await Client.product.fetchAll();
+    setProducts(allProducts);
+  }
+
+  async function addItemToCheckout(variantId: string, quantity: number) {
+    if (checkout) {
+      const lineItemsToAdd = [
+        {
+          variantId,
+          // quantity: parseInt(quantity, 10),
+          quantity: quantity,
+        },
+      ];
+      const newCheckout = await Client.checkout.addLineItems(
+        checkout.id,
+        lineItemsToAdd
+      );
+      setCheckout(newCheckout);
     }
   }
 
-  createCheckout = async () => {
-    const checkout = await client.checkout.create();
-    localStorage.setItem('checkout_id', JSON.stringify(checkout.id));
-    this.setState({ checkout: checkout });
-  };
+  async function fetchProductWithHandle(handle: string) {
+    const getProduct = await Client.product.fetchByHandle(handle);
+    setProduct(getProduct);
 
-  fetchCheckout = async (checkoutId: string) => {
-    client.checkout
-      .fetch(checkoutId)
-      .then((checkout) => {
-        this.setState({ checkout: checkout });
-      })
-      .catch((error) => console.log(error));
-  };
-
-  addItemToCheckout = async (variantId: string, quantity: number) => {
-    const lineItemsToAdd = [
-      {
-        variantId,
-        quantity,
-      },
-    ];
-    const checkout = await client.checkout.addLineItems(
-      this.state.checkout.id,
-      lineItemsToAdd
-    );
-    this.setState({ checkout: checkout });
-
-    this.openCart();
-  };
-
-  removeLineItem = async (lineItemIdsToRemove: string[]) => {
-    const checkoutId = this.state.checkout.id;
-
-    client.checkout
-      .removeLineItems(checkoutId, lineItemIdsToRemove)
-      .then((checkout) => this.setState({ checkout }));
-  };
-
-  fetchAllProducts = async () => {
-    const products = await client.product.fetchAll();
-    this.setState({ products });
-  };
-
-  fetchProductWithHandle = async (handle: string) => {
-    const product = await client.product.fetchByHandle(handle);
-    this.setState({ product });
-
-    return product;
-  };
-
-  closeCart = () => {
-    this.setState({ isCartOpen: false });
-  };
-  openCart = () => {
-    this.setState({ isCartOpen: true });
-  };
-
-  closeMenu = () => {
-    this.setState({ isMenuOpen: false });
-  };
-  openMenu = () => {
-    this.setState({ isMenuOpen: true });
-  };
-
-  render() {
-    return (
-      <ShopContext.Provider
-        value={{
-          ...this.state,
-          fetchCheckout: this.fetchCheckout,
-          fetchAllProducts: this.fetchAllProducts,
-          fetchProductWithHandle: this.fetchProductWithHandle,
-          createCheckout: this.createCheckout,
-          closeCart: this.closeCart,
-          openCart: this.openCart,
-          closeMenu: this.closeMenu,
-          openMenu: this.openMenu,
-          addItemToCheckout: this.addItemToCheckout,
-          removeLineItem: this.removeLineItem,
-        }}
-      >
-        {this.props.children}
-      </ShopContext.Provider>
-    );
+    return getProduct;
   }
-}
 
-const ShopConsumer = ShopContext.Consumer;
+  useEffect(() => {
+    const storageCheckoutId = localStorage.getItem('checkout_id');
+    const storageProducts = localStorage.getItem('products');
+    const storageCollections = localStorage.getItem('collections');
 
-export { ShopConsumer, ShopContext };
+    if (storageCheckoutId !== 'undefined' && storageCheckoutId !== null) {
+      fetchCheckout(storageCheckoutId);
+    } else {
+      createCheckout();
+    }
 
-export default ShopProvider;
+    if (storageProducts && storageProducts !== 'undefined') {
+      setProducts(JSON.parse(storageProducts));
+    } else {
+      fetchAllProducts();
+    }
+
+    if (storageCollections && storageCollections !== 'undefined') {
+      setCollections(JSON.parse(storageCollections));
+    } else {
+      fetchCollections();
+    }
+  }, [createCheckout, fetchCheckout, fetchAllProducts, fetchCollections]);
+
+  return (
+    <ShopifyContext.Provider
+      value={{
+        product,
+        products,
+        checkout,
+        collections,
+        isCartOpen,
+        isMenuOpen,
+        fetchCheckout,
+        removeLineItem,
+        createCheckout,
+        fetchAllProducts,
+        addItemToCheckout,
+        fetchProductWithHandle,
+        fetchCollections,
+        toggleCart,
+        toggleMenu,
+      }}
+    >
+      {children}
+    </ShopifyContext.Provider>
+  );
+};
+
+const ShopifyConsumer = ShopifyContext.Consumer;
+
+export { ShopifyConsumer, ShopifyContext };
+
+export const useShopify = () => {
+  const ctx = useContext(ShopifyContext);
+  if (!ctx)
+    throw new Error('`useShopify` must be used within a ShopifyProvider');
+  return ctx;
+};
+
+export default ShopifyProvider;
